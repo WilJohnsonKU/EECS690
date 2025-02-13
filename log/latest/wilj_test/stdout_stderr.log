@@ -1,0 +1,36 @@
+running develop
+/usr/lib/python3/dist-packages/setuptools/command/easy_install.py:158: EasyInstallDeprecationWarning: easy_install command is deprecated. Use build and pip and other standards-based tools.
+  warnings.warn(
+/usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+  warnings.warn(
+Removing /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj-test.egg-link (link to .)
+running egg_info
+writing ../build/wilj_test/wilj_test.egg-info/PKG-INFO
+writing dependency_links to ../build/wilj_test/wilj_test.egg-info/dependency_links.txt
+writing entry points to ../build/wilj_test/wilj_test.egg-info/entry_points.txt
+writing requirements to ../build/wilj_test/wilj_test.egg-info/requires.txt
+writing top-level names to ../build/wilj_test/wilj_test.egg-info/top_level.txt
+reading manifest file '../build/wilj_test/wilj_test.egg-info/SOURCES.txt'
+writing manifest file '../build/wilj_test/wilj_test.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/ubuntu/ros2_ws/src/build/wilj_test/build
+creating /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib
+creating /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test
+copying wilj_test/simple_motion.py -> /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test
+copying wilj_test/__init__.py -> /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test
+running install
+/usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+  warnings.warn(
+running install_lib
+creating /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test
+copying /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test/simple_motion.py -> /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test
+copying /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test/__init__.py -> /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test
+byte-compiling /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test/simple_motion.py to simple_motion.cpython-310.pyc
+byte-compiling /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test/__init__.py to __init__.cpython-310.pyc
+running install_data
+running install_egg_info
+Copying ../build/wilj_test/wilj_test.egg-info to /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test-0.0.0-py3.10.egg-info
+running install_scripts
+Installing simple_motion script to /home/ubuntu/ros2_ws/src/install/wilj_test/lib/wilj_test
+writing list of installed files to '/home/ubuntu/ros2_ws/src/build/wilj_test/install.log'

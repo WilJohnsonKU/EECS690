@@ -1,0 +1,28 @@
+[1.686s] Invoking command in '/home/ubuntu/ros2_ws/src/build/wilj_test': PYTHONPATH=/home/ubuntu/ros2_ws/src/build/wilj_test/prefix_override:/home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/ubuntu/ros2_ws/src/build/wilj_test/build --no-deps install_data
+[2.077s] running develop
+[2.087s] /usr/lib/python3/dist-packages/setuptools/command/easy_install.py:158: EasyInstallDeprecationWarning: easy_install command is deprecated. Use build and pip and other standards-based tools.
+[2.088s]   warnings.warn(
+[2.090s] /usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+[2.090s]   warnings.warn(
+[2.318s] running egg_info
+[2.318s] creating wilj_test.egg-info
+[2.318s] writing wilj_test.egg-info/PKG-INFO
+[2.319s] writing dependency_links to wilj_test.egg-info/dependency_links.txt
+[2.319s] writing entry points to wilj_test.egg-info/entry_points.txt
+[2.319s] writing requirements to wilj_test.egg-info/requires.txt
+[2.319s] writing top-level names to wilj_test.egg-info/top_level.txt
+[2.332s] writing manifest file 'wilj_test.egg-info/SOURCES.txt'
+[2.335s] reading manifest file 'wilj_test.egg-info/SOURCES.txt'
+[2.335s] writing manifest file 'wilj_test.egg-info/SOURCES.txt'
+[2.338s] running build_ext
+[2.338s] Creating /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj-test.egg-link (link to .)
+[2.339s] Installing node_name script to /home/ubuntu/ros2_ws/src/install/wilj_test/lib/wilj_test
+[2.340s] 
+[2.340s] Installed /home/ubuntu/ros2_ws/src/build/wilj_test
+[2.340s] running install_data
+[2.340s] creating /home/ubuntu/ros2_ws/src/install/wilj_test/share/ament_index
+[2.340s] creating /home/ubuntu/ros2_ws/src/install/wilj_test/share/ament_index/resource_index
+[2.340s] creating /home/ubuntu/ros2_ws/src/install/wilj_test/share/ament_index/resource_index/packages
+[2.340s] copying resource/wilj_test -> /home/ubuntu/ros2_ws/src/install/wilj_test/share/ament_index/resource_index/packages
+[2.340s] copying package.xml -> /home/ubuntu/ros2_ws/src/install/wilj_test/share/wilj_test
+[2.421s] Invoked command in '/home/ubuntu/ros2_ws/src/build/wilj_test' returned '0': PYTHONPATH=/home/ubuntu/ros2_ws/src/build/wilj_test/prefix_override:/home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/ubuntu/ros2_ws/src/build/wilj_test/build --no-deps install_data

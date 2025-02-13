@@ -1,0 +1,21 @@
+[1.097s] Invoking command in '/home/ubuntu/ros2_ws/src/build/wilj_test': PYTHONPATH=/home/ubuntu/ros2_ws/src/build/wilj_test/prefix_override:/home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/ubuntu/ros2_ws/src/build/wilj_test/build --no-deps install_data
+[1.477s] running develop
+[1.477s] /usr/lib/python3/dist-packages/setuptools/command/easy_install.py:158: EasyInstallDeprecationWarning: easy_install command is deprecated. Use build and pip and other standards-based tools.
+[1.477s]   warnings.warn(
+[1.479s] /usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+[1.480s]   warnings.warn(
+[1.691s] running egg_info
+[1.692s] writing wilj_test.egg-info/PKG-INFO
+[1.692s] writing dependency_links to wilj_test.egg-info/dependency_links.txt
+[1.698s] writing entry points to wilj_test.egg-info/entry_points.txt
+[1.699s] writing requirements to wilj_test.egg-info/requires.txt
+[1.700s] writing top-level names to wilj_test.egg-info/top_level.txt
+[1.705s] reading manifest file 'wilj_test.egg-info/SOURCES.txt'
+[1.706s] writing manifest file 'wilj_test.egg-info/SOURCES.txt'
+[1.711s] running build_ext
+[1.711s] Creating /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj-test.egg-link (link to .)
+[1.712s] 
+[1.712s] Installed /home/ubuntu/ros2_ws/src/build/wilj_test
+[1.712s] running install_data
+[1.712s] copying package.xml -> /home/ubuntu/ros2_ws/src/install/wilj_test/share/wilj_test
+[1.788s] Invoked command in '/home/ubuntu/ros2_ws/src/build/wilj_test' returned '0': PYTHONPATH=/home/ubuntu/ros2_ws/src/build/wilj_test/prefix_override:/home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --editable --build-directory /home/ubuntu/ros2_ws/src/build/wilj_test/build --no-deps install_data

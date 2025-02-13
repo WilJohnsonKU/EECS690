@@ -1,0 +1,40 @@
+[1.158s] Invoking command in '/home/ubuntu/ros2_ws/src/build/wilj_test': PYTHONPATH=/home/ubuntu/ros2_ws/src/build/wilj_test/prefix_override:/home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --uninstall --editable --build-directory /home/ubuntu/ros2_ws/src/build/wilj_test/build
+[1.554s] running develop
+[1.554s] /usr/lib/python3/dist-packages/setuptools/command/easy_install.py:158: EasyInstallDeprecationWarning: easy_install command is deprecated. Use build and pip and other standards-based tools.
+[1.554s]   warnings.warn(
+[1.556s] /usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+[1.556s]   warnings.warn(
+[1.773s] Removing /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj-test.egg-link (link to .)
+[1.849s] Invoked command in '/home/ubuntu/ros2_ws/src/build/wilj_test' returned '0': PYTHONPATH=/home/ubuntu/ros2_ws/src/build/wilj_test/prefix_override:/home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py develop --uninstall --editable --build-directory /home/ubuntu/ros2_ws/src/build/wilj_test/build
+[1.851s] Invoking command in '/home/ubuntu/ros2_ws/src/wilj_test': PYTHONPATH=/home/ubuntu/ros2_ws/src/build/wilj_test/prefix_override:/home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../build/wilj_test build --build-base /home/ubuntu/ros2_ws/src/build/wilj_test/build install --record /home/ubuntu/ros2_ws/src/build/wilj_test/install.log --single-version-externally-managed
+[2.203s] running egg_info
+[2.204s] writing ../build/wilj_test/wilj_test.egg-info/PKG-INFO
+[2.204s] writing dependency_links to ../build/wilj_test/wilj_test.egg-info/dependency_links.txt
+[2.211s] writing entry points to ../build/wilj_test/wilj_test.egg-info/entry_points.txt
+[2.212s] writing requirements to ../build/wilj_test/wilj_test.egg-info/requires.txt
+[2.213s] writing top-level names to ../build/wilj_test/wilj_test.egg-info/top_level.txt
+[2.219s] reading manifest file '../build/wilj_test/wilj_test.egg-info/SOURCES.txt'
+[2.220s] writing manifest file '../build/wilj_test/wilj_test.egg-info/SOURCES.txt'
+[2.220s] running build
+[2.220s] running build_py
+[2.220s] creating /home/ubuntu/ros2_ws/src/build/wilj_test/build
+[2.220s] creating /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib
+[2.221s] creating /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test
+[2.221s] copying wilj_test/simple_motion.py -> /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test
+[2.221s] copying wilj_test/__init__.py -> /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test
+[2.221s] running install
+[2.221s] /usr/lib/python3/dist-packages/setuptools/command/install.py:34: SetuptoolsDeprecationWarning: setup.py install is deprecated. Use build and pip and other standards-based tools.
+[2.221s]   warnings.warn(
+[2.222s] running install_lib
+[2.223s] creating /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test
+[2.223s] copying /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test/simple_motion.py -> /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test
+[2.223s] copying /home/ubuntu/ros2_ws/src/build/wilj_test/build/lib/wilj_test/__init__.py -> /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test
+[2.224s] byte-compiling /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test/simple_motion.py to simple_motion.cpython-310.pyc
+[2.225s] byte-compiling /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test/__init__.py to __init__.cpython-310.pyc
+[2.225s] running install_data
+[2.226s] running install_egg_info
+[2.230s] Copying ../build/wilj_test/wilj_test.egg-info to /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj_test-0.0.0-py3.10.egg-info
+[2.231s] running install_scripts
+[2.266s] Installing simple_motion script to /home/ubuntu/ros2_ws/src/install/wilj_test/lib/wilj_test
+[2.267s] writing list of installed files to '/home/ubuntu/ros2_ws/src/build/wilj_test/install.log'
+[2.332s] Invoked command in '/home/ubuntu/ros2_ws/src/wilj_test' returned '0': PYTHONPATH=/home/ubuntu/ros2_ws/src/build/wilj_test/prefix_override:/home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 setup.py egg_info --egg-base ../build/wilj_test build --build-base /home/ubuntu/ros2_ws/src/build/wilj_test/build install --record /home/ubuntu/ros2_ws/src/build/wilj_test/install.log --single-version-externally-managed
