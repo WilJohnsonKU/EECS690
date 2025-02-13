@@ -1,0 +1,15 @@
+running develop
+running egg_info
+writing wilj_test.egg-info/PKG-INFO
+writing dependency_links to wilj_test.egg-info/dependency_links.txt
+writing entry points to wilj_test.egg-info/entry_points.txt
+writing requirements to wilj_test.egg-info/requires.txt
+writing top-level names to wilj_test.egg-info/top_level.txt
+reading manifest file 'wilj_test.egg-info/SOURCES.txt'
+writing manifest file 'wilj_test.egg-info/SOURCES.txt'
+running build_ext
+Creating /home/ubuntu/ros2_ws/src/install/wilj_test/lib/python3.10/site-packages/wilj-test.egg-link (link to .)
+
+Installed /home/ubuntu/ros2_ws/src/build/wilj_test
+running install_data
+copying package.xml -> /home/ubuntu/ros2_ws/src/install/wilj_test/share/wilj_test
