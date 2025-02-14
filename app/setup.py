@@ -30,6 +30,8 @@ setup(
             'ar_app = app.ar_app:main',
             'hand_trajectory = app.hand_trajectory_node:main',
             'hand_gesture = app.hand_gesture:main',
+            'bark_node = app.bark_node:main',
+            
         ],
     },
 )
