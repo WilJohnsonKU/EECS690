@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'bark_node = app.bark_node:main',
+            'bark_node = talent_show.bark_node:main',
         ],
     },
 )
