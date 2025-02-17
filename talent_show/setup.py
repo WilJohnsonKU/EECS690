@@ -26,6 +26,8 @@ setup(
         'console_scripts': [
             'bark_node = talent_show.bark_node:main',
             'bt_control = talent_show.bt_control_node:main',
+            'moonwalk_node = talent_show.moonwalk_node:main',
+            
         ],
     },
 )
