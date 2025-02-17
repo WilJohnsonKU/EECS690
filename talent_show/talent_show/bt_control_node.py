@@ -106,6 +106,11 @@ class SerialBridge(Node):
             future = self.bark_client.call_async(self.request)
             rclpy.spin_until_future_complete(self, future)
             return future.result()
+            
+        elif command == "SPIN":
+        twist.linear.x = 0.0
+        twist.angular.z = 0.0  # Adjust spin speed as necessary.
+        self.get_logger().info("Command: SPIN. Spinning in place.")
     
         else:
             self.get_logger().warning(f"Unknown command received: {command}")
