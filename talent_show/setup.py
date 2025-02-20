@@ -25,9 +25,10 @@ setup(
     entry_points={
         'console_scripts': [
             'bark_node = talent_show.bark_node:main',
+            'spin_node = talent_show.spin_node:main',
             'bt_control = talent_show.bt_control_node:main',
             'moonwalk_node = talent_show.moonwalk_node:main',
-            
+            'fetch = talent_show.red_ball_fetcher:main',
         ],
     },
 )

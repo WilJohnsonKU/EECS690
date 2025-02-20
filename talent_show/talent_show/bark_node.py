@@ -56,17 +56,75 @@ class BarkNode(Node):
         buzzer_msg.repeat = 1
         self.buzzer_pub.publish(buzzer_msg)
 
-        time.sleep(.5)
+        time.sleep(3)
 
-        """i = 500
-        while (i <= 1000):
-            buzzer_msg.freq = i
-            buzzer_msg.on_time = 0.01
-            buzzer_msg.off_time = 0.01
-            buzzer_msg.repeat = 1
-            self.buzzer_pub.publish(buzzer_msg)
-            time.sleep(0.04)
-            i += 1"""
+        self.play_rickroll()
+
+    def play_rickroll(self):
+        # Each note lasts 0.5 seconds so 30 notes ≈ 15 seconds total.
+        note_duration = 0.5  # seconds per note
+        
+        # Define a simple melody using note names.
+        # This sequence is arranged to roughly mimic the chorus:
+        # "Never gonna give you up, never gonna let you down,
+        #  never gonna run around and desert you, never gonna..."
+        note_freq = {
+            "A": 440,
+            "B": 493,
+            "C#": 554,
+            "D": 587,
+            "E": 659,
+            "F#": 740,
+            "^A": 880,
+            "^B": 987,
+            "^C#": 1108,
+            "^D": 1174,
+            "^E": 1318,
+            "^F#": 1479
+        }
+        
+        # Encode the transcription as a sequence of tokens.
+        # Notes are given as in your transcription.
+        # The "~" token represents a rest.
+        melody = [
+            # Phrase 1: "A-B      ^D-B    ^F# ^F# ^E"
+            "A", "B", "^D", "B", "^F#", "^F#", "^E",
+            # Phrase 2: "A-B      ^D-B  ^E  ^E  ^D-^C#-B" with a rest at the end ( ~ )
+            "A", "B", "^D", "B", "^E", "^E", "^D", "^C#", "B", "~",
+            # Phrase 3: "A-B      ^D-B   ^D   ^E-^C#    A     A-^E   ^D"
+            "A", "B", "^D", "B", "^D", "^E", "^C#", "A", "A", "^E", "^D",
+            # Phrase 4: "A-B       ^D-B    ^F#   ^F# ^E"
+            "A", "B", "^D", "B", "^F#", "^F#", "^E",
+            # Phrase 5: "A-B       ^D-B   ^A   ^C#-^D-^C#-B" with two rests after
+            "A", "B", "^D", "B", "^A", "^C#", "^D", "^C#", "B", "~", "~",
+            # Phrase 6: "A-B      ^D-B   ^D ^E ^C#-A   A   ^E   ^D" with a rest at the end
+            "A", "B", "^D", "B", "^D", "^E", "^C#", "A", "A", "^E", "^D", "~"
+        ]
+        
+        # Iterate over the melody tokens.
+        for token in melody:
+            if token == "~":
+                # This is a rest: wait for the duration without playing a note.
+                time.sleep(note_duration)
+            else:
+                # Look up the frequency for the note.
+                frequency = note_freq.get(token, 500)  # default to 500Hz if not found
+                
+                # Create and configure your buzzer message.
+                # (Replace BuzzerMessage with your actual message type as needed.)
+                buzzer_msg = BuzzerState()
+                buzzer_msg.freq = frequency
+                # Play the note for 80% of the token duration; leave 20% as a gap.
+                buzzer_msg.on_time = note_duration * 0.4
+                buzzer_msg.off_time = note_duration * 0.01
+                buzzer_msg.repeat = 1
+                
+                # Publish the message to the buzzer.
+                self.buzzer_pub.publish(buzzer_msg)
+                
+                # Wait the full token duration before the next token.
+                time.sleep(note_duration)
+
 
 
 def main(args=None):
