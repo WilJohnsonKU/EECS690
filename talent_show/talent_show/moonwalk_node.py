@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
+from std_srvs.srv import Trigger
 import time
 
 class MoonwalkNode(Node):
@@ -19,8 +20,16 @@ class MoonwalkNode(Node):
         # Timing parameters
         self.step_duration = 0.5     # Duration of forward step
         self.glide_duration = 1.0    # Duration of backward glide
+
+        self.create_service(Trigger, 'trigger_dance', self.moonwalk_callback)
         
         self.get_logger().info('Moonwalk node has been started')
+
+    def moonwalk_callback(self, request, response):
+        # Create a bark pattern (two-tone bark)
+        self.moonwalk_pattern()
+        response.success = True
+        return response
 
     def moonwalk_pattern(self):
         """Execute the moonwalk movement pattern"""
