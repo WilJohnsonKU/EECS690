@@ -49,6 +49,44 @@ class MoonwalkNode(Node):
         self.cmd_vel_pub.publish(twist)
         time.sleep(self.glide_duration)
         
+        # Step 3: Rotate and move to the side 
+        twist.linear.y = self.side_speed
+        twist.angular.z = self.rotation_speed
+        self.cmd_vel_pub.publish(twist)
+        time.sleep(self.step_duration)
+
+        # Step 4: Quick forward step with slight side movement
+        twist.linear.x = self.forward_speed
+        twist.linear.y = -self.side_speed
+        self.cmd_vel_pub.publish(twist)
+        time.sleep(self.step_duration)
+
+        # Step 5: Backwards glide with reverse rotation
+        twist.linear.x = self.backward_speed
+        twist.linear.y = self.side_speed
+        twist.angular.z = -self.rotation_speed
+        self.cmd_vel_pub.publish(twist)
+        time.sleep(self.step_duration)
+
+        # Step 6: Rotate and move to the side
+        twist.linear.y = -self.side_speed
+        twist.angular.z = self.rotation_speed
+        self.cmd_vel_pub.publish(twist)
+        time.sleep(self.step_duration)
+
+        # Step 7: Quick forward step with slight side movement
+        twist.linear.x = self.forward_speed
+        twist.linear.y = self.side_speed
+        self.cmd_vel_pub.publish(twist)
+        time.sleep(self.step_duration)
+        
+        # Step 8: Smooth backward glide with rotation
+        twist.linear.x = self.backward_speed
+        twist.linear.y = -self.side_speed
+        twist.angular.z = self.rotation_speed
+        self.cmd_vel_pub.publish(twist)
+        time.sleep(self.glide_duration)
+
         # Stop the robot
         self.stop_robot()
 
