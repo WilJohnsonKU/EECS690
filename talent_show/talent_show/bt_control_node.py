@@ -9,15 +9,21 @@ import os
 
 class SerialBridge(Node):
     def __init__(self):
+        super().__init__('serial_bridge')
 
         # Bark Trigger Setup
         self.bark_client = self.create_client(Trigger, 'trigger_bark')
         while not self.bark_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Bark Service not available, waiting...')
-        self.request = Trigger.Request()
+        self.bark_request = Trigger.Request()
+
+        # Spin Trigger Setup
+        self.spin_client = self.create_client(Trigger, 'trigger_spin')
+        while not self.spin_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Spin Service not available, waiting...')
+        self.spin_request = Trigger.Request()
 
         # Main Serial Connection Code
-        super().__init__('serial_bridge')
         # Publisher for incoming serial data (if needed for debugging or other purposes)
         self.serial_in_pub = self.create_publisher(String, 'serial_in', 10)
         # Subscriber for outgoing data to serial (this part remains unchanged)
@@ -103,14 +109,14 @@ class SerialBridge(Node):
         
         # Talent Show Commands:
         elif command == "BARK":
-            future = self.bark_client.call_async(self.request)
-            rclpy.spin_until_future_complete(self, future)
+            future = self.bark_client.call_async(self.bark_request)
+            # rclpy.spin_until_future_complete(self, future)
             return future.result()
             
         elif command == "SPIN":
-            twist.linear.x = 0.0
-            twist.angular.z = 0.0  # Adjust spin speed as necessary.
-            self.get_logger().info("Command: SPIN. Spinning in place.")
+            future = self.spin_client.call_async(self.spin_request)
+            # rclpy.spin_until_future_complete(self, future)
+            return future.result()
     
         else:
             self.get_logger().warning(f"Unknown command received: {command}")

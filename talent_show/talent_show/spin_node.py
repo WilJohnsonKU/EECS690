@@ -64,7 +64,7 @@ class SpinNode(Node):
         twist.angular.z = 3.0  # Adjust speed as necessary
 
         self.cmd_vel_pub.publish(twist)
-        time.sleep(3)
+        time.sleep(6)
 
         # Stop the robot after spinning
         twist.angular.z = 0.0
@@ -77,11 +77,11 @@ class SpinNode(Node):
         """
         self.get_logger().info("Driving in a circle!")
         twist = Twist()
-        twist.linear.x = 0.5  # Adjust forward speed
-        twist.angular.z = 1.5  # Adjust turning speed for a circular motion
+        twist.linear.x = 0.7  # Adjust forward speed
+        twist.angular.z = 3.0  # Adjust turning speed for a circular motion
 
         self.cmd_vel_pub.publish(twist)
-        time.sleep(3)
+        time.sleep(6)
 
         # Stop the robot after moving in a circle
         twist.linear.x = 0.0
