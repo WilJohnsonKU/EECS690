@@ -44,10 +44,10 @@ class FinderNode(Node):
     def node_state_callback(self, msg):
         """Handles activation/deactivation from external control."""
         if msg.data == "find_enemy":
-            if self.active == False:
+            if not self.active:
                 self.active = True
         else:
-            if self.active == True:
+            if self.active:
                 self.active = False
 
     def image_callback(self, msg):
