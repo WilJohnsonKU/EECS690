@@ -7,16 +7,18 @@ import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from std_msgs.msg import Float32MultiArray 
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy
 
 class SquareController(Node): # Define a class named SquareController that inherits from Node
     def __init__(self): # Define the constructor for the class
         super().__init__('square_controller') # Call the constructor of the parent class (Node) with the node name 'square_controller'
+        qos_profile = QoSProfile(depth=1, reliability=QoSReliabilityPolicy.BEST_EFFORT)
 
         self.subscription = self.create_subscription( # Create a subscriber
             Float32MultiArray, # Subscribe to Float32MultiArray messages
             'wall_info', # Subscribe to the 'wall_info' topic
             self.wall_data_callback, # Specify the callback function to be called when a message is received
-            10) # Use a queue size of 10
+            qos_profile) # Use a queue size of 10
         self.subscription  # prevent unused variable warning
 
         self.publisher_ = self.create_publisher(Twist, 'cmd_vel', 10) # Create a publisher for Twist messages on the 'cmd_vel' topic with a queue size of 10

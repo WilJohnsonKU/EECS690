@@ -24,9 +24,13 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'tracker = sumo.orange_tracker:main',
+            'attack_enemy = sumo.attack_node:main',
             'square_controller = sumo.square_controller:main',
-            'wall_avoider = sumo.wall_avoider:main'
+            'wall_avoider = sumo.lidar_wall_avoider:main',
+            'finder_node = sumo.finder_node:main',
+            'control = sumo.control_node:main',
+            'centroid = sumo.centroid_finder:main',
+            'safety = sumo.safety_node:main',
         ],
     },
 )
