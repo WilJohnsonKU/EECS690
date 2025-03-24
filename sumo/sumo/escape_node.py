@@ -92,7 +92,7 @@ class EscapeNode(Node):
 
     def idle_behavior(self):
         """
-        Sets the robot to an idle state when no threat (wall or opponent) is detected.
+        Sets the robot to an idle state when no threat (wall or opponent) is detected. Might replace or get rid of this with a possible function call for neutral state.
         """
         twist = Twist()
         twist.linear.x = 0.0  # Stop forward/backward movement.
