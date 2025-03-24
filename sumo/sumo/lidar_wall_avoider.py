@@ -1,85 +1,85 @@
-# Description:
-# This node subscribes to LaserScan data from a LiDAR sensor, processes the data to find the
-# distance and angle to the nearest wall, and publishes this information as a Float32MultiArray
-# on the 'wall_info' topic. This information can be used by other nodes for wall avoidance or
-# other navigation purposes.
+#!/usr/bin/env python3
 import rclpy
 from rclpy.node import Node
-from rclpy.qos import QoSProfile 
-from rclpy.qos import QoSReliabilityPolicy
-from sensor_msgs.msg import LaserScan 
-from geometry_msgs.msg import Point 
-from std_msgs.msg import Float32MultiArray 
-import collections # Import the collections module
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy
+from sensor_msgs.msg import LaserScan
+from std_msgs.msg import Float32MultiArray
+import math
 
-class LidarWallAvoider(Node): # Define a class named LidarWallAvoider that inherits from Node
-    def __init__(self): # Define the constructor for the class
-        super().__init__('lidar_wall_avoider') # Call the constructor of the parent class (Node) with the node name 'lidar_wall_avoider'
-        
-        # Subscriber for LiDAR data
+class LidarDataPublisher(Node):
+    def __init__(self):
+        super().__init__('lidar_data_publisher')
         qos_profile = QoSProfile(depth=1, reliability=QoSReliabilityPolicy.BEST_EFFORT)
-        self.lidar_subscriber = self.create_subscription( # Create a subscriber
-            LaserScan, # Subscribe to LaserScan messages
-            '/scan_raw', # Subscribe to the 'scan' topic
-            self.lidar_callback, # Specify the callback function to be called when a message is received
-            qos_profile # Use the defined QoS profile
-        )
+        self.lidar_subscriber = self.create_subscription(
+            LaserScan,
+            '/scan_raw',
+            self.lidar_callback,
+            qos_profile)
+        self.lidar_publisher = self.create_publisher(
+            Float32MultiArray,
+            'lidar_data',
+            qos_profile)
         
-        # Publisher for wall distance and angle
-        self.wall_info_publisher = self.create_publisher( # Create a publisher
-            Float32MultiArray, # Publish Float32MultiArray messages
-            'wall_info', # Publish to the 'wall_info' topic
-            qos_profile # Use the defined QoS profile
-        )
-        
-        self.get_logger().info('LidarWallAvoider node has been started.') # Log a message to the console
-        self.lidar_buffer = collections.deque(maxlen=20) # Initialize a deque to store the last 20 LiDAR messages
+        # Use a fixed number of bins for a consistent resolution.
+        self.num_bins = 360  # maximum reasonable number of points
+        self.world_model = None  # list of length self.num_bins holding the best-guess ranges
+        self.model_angle_min = None
+        self.model_angle_max = None
 
-    def lidar_callback(self, msg): # Define the callback function for the LiDAR subscriber
-        self.lidar_buffer.append(msg) # Append the latest message to the buffer
-        
-        if len(self.lidar_buffer) > 0: # Check if the buffer is not empty
-            msg = self.lidar_buffer[-1] # Get the most recent message from the buffer
-        
-            # Process LiDAR data to find the nearest wall
-            min_distance = float('inf') # Initialize the minimum distance to infinity
-            angle_to_wall = 0.0 # Initialize the angle to the wall to 0.0
-            
-            for i, distance in enumerate(msg.ranges): # Iterate over the distances in the LaserScan message
-                if distance < min_distance and distance > msg.range_min: # Check if the current distance is less than the minimum distance and greater than the minimum range of the sensor
-                    min_distance = distance # Update the minimum distance
-                    angle_to_wall = msg.angle_min + i * msg.angle_increment # Calculate the angle to the wall
-            
-            # Publish the distance and angle to the nearest wall
-            wall_info = Float32MultiArray() # Create a Float32MultiArray message
-            wall_info.data = [min_distance, angle_to_wall] # Set the data of the message to the minimum distance and angle to the wall
-            self.wall_info_publisher.publish(wall_info) # Publish the message
-            
-            self.get_logger().info(f'Distance to wall: {min_distance}, Angle to wall: {angle_to_wall}') # Log the distance and angle to the wall
+    def lidar_callback(self, msg):
+        if msg is None:
+            self.get_logger().warn("No LIDAR Data Received")
+            return
 
-    #alternative implementation based on wall_avoider.py
-    # def lidar_callback(self, msg):
-    #     # Process LiDAR data to find the distance to the nearest wall
-    #     print("\n\n")
-    #     print(msg.ranges)
-    #     front_distance = min(msg.ranges[0:10] + msg.ranges[-10:])  # Front distance: Calculate the minimum distance from the front lidar readings
-    #     max_index = int(math.radians(MAX_SCAN_ANGLE / 2.0) / msg.angle_increment)
-    #     left_distance = min(msg.ranges[:max_index])
-    #     right_distance = min(msg.ranges[::-1][:max_index])
+        # On the first scan, initialize the persistent world model using the scan's angular span.
+        if self.world_model is None:
+            self.model_angle_min = msg.angle_min
+            self.model_angle_max = msg.angle_max
+            self.world_model = [float('nan')] * self.num_bins
 
-    #     # Publish the calculated distances
-    #     wall_info = Float32MultiArray()
-    #     wall_info.data = [front_distance, left_distance, right_distance]
-    #     self.wall_info_publisher.publish(wall_info)
+        # Compute the angular span and bin resolution.
+        angle_range = self.model_angle_max - self.model_angle_min
+        bin_resolution = angle_range / (self.num_bins - 1)
 
-    #     self.get_logger().info(f'Front distance: {front_distance}, Left distance: {left_distance}, Right distance: {right_distance}')
+        # Iterate through the new scan measurements.
+        current_angle = msg.angle_min
+        for r in msg.ranges:
+            # Only consider measurements that fall within our persistent model range.
+            if current_angle < self.model_angle_min or current_angle > self.model_angle_max:
+                current_angle += msg.angle_increment
+                continue
+
+            # Map the current angle to a bin index.
+            # We compute a fractional index and round to the nearest integer.
+            fractional_index = (current_angle - self.model_angle_min) / angle_range * (self.num_bins - 1)
+            bin_index = int(round(fractional_index))
+
+            # Update the persistent world model only if the new measurement is valid.
+            if not math.isnan(r):
+                self.world_model[bin_index] = r
+            # Otherwise, leave the previous value intact.
+            current_angle += msg.angle_increment
+
+        # Build a flat list of angle–range pairs from the persistent world model.
+        flat_data = []
+        for i in range(self.num_bins):
+            angle = self.model_angle_min + i * bin_resolution
+            distance = self.world_model[i]
+            flat_data.extend([angle, distance])
+
+        lidar_array = Float32MultiArray()
+        # Use slicing to copy the list.
+        lidar_array.data = flat_data[:]
+        self.lidar_publisher.publish(lidar_array)
+        # self.get_logger().info(f"{lidar_array}\n\n\n")
+        # self.get_logger().info("Published world model with {} bins.".format(self.num_bins))
 
 def main(args=None):
-    rclpy.init(args=args)  # Initialize the ROS 2 Python client library
-    node = LidarWallAvoider()  # Create an instance of the LidarWallAvoider node
-    rclpy.spin(node)  # Keep the node running, processing callbacks
-    node.destroy_node()  # Destroy the node explicitly (optional)
-    rclpy.shutdown()  # Shutdown the ROS 2 Python client library
+    rclpy.init(args=args)
+    node = LidarDataPublisher()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
