@@ -42,16 +42,18 @@ def estimate_room_and_robot(lidar_data):
 
     # Optionally, use local variance to separate wall points from others.
     wall_mask = local_variance_filter(distances)
-    # wall_points = points[wall_mask]
+    wall_points = points[wall_mask]
     non_wall_points = points[~wall_mask]
 
-    wall_points = points
+    # wall_points = points
 
     # Estimate room center from wall points
     room_center = np.nanmean(wall_points, axis=0)
 
+    robot_location = np.nanmean(non_wall_points, axis=0)
+
     # Clustering for potential robot detection can be added here.
-    return room_center, wall_points, non_wall_points
+    return room_center, wall_points, non_wall_points, robot_location
 
 # --- CentroidEstimator Node ---
 class CentroidEstimator(Node):
@@ -70,6 +72,12 @@ class CentroidEstimator(Node):
             'centroid_info',
             qos_profile)
 
+        # Publisher for enemy information
+        self.enemy_location_publisher = self.create_publisher(
+            Float32MultiArray,
+            '/sumo/enemy_location_guess',
+            qos_profile)
+
     def lidar_callback(self, msg):
         data = msg.data
         if len(data) % 2 != 0:
@@ -84,20 +92,21 @@ class CentroidEstimator(Node):
             lidar_data.append((angle, distance))
         
         # Run centroid and robot estimation
-        room_center, wall_points, non_wall_points = estimate_room_and_robot(lidar_data)
-        robot_pos = None  # Robot detection can be implemented if needed.
+        room_center, wall_points, non_wall_points, robot_pos = estimate_room_and_robot(lidar_data)
         
         # Prepare output message.
         centroid_msg = Float32MultiArray()
+        enemy_location_msg = Float32MultiArray()
+
         if robot_pos is not None:
-            centroid_msg.data = [room_center[0], room_center[1]]
-            self.get_logger().info("Room center: (%.2f, %.2f), Robot pos: (%.2f, %.2f)" %
-                                   (room_center[0], room_center[1], robot_pos[0], robot_pos[1]))
-        else:
-            centroid_msg.data = [room_center[0], room_center[1]]
-            #self.get_logger().info("Room center: (%.2f, %.2f), no robot detected." %
-            #                       (room_center[0], room_center[1]))
+            enemy_location_msg.data = [robot_pos[0], robot_pos[1]]
+        
+        centroid_msg.data = [room_center[0], room_center[1]]
+           
         self.centroid_publisher.publish(centroid_msg)
+        self.enemy_location_publisher.publish(enemy_location_msg)
+
+        # self.get_logger().info(f"Enemy Direction Guess: { robot_pos[0] }, { robot_pos[1] }")
 
 def main(args=None):
     rclpy.init(args=args)

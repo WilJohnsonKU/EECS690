@@ -2,7 +2,8 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch_ros.actions import Node 
 from launch import LaunchDescription 
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
 
@@ -60,6 +61,14 @@ def generate_launch_description(): # Define a function named generate_launch_des
         parameters=[]
     )
 
+    imu_node = Node( # Create a Node object for the imu node
+        package='sumo', # Specify the package name
+        executable='imu', # Specify the executable name
+        name='imu', # Specify the node name
+        output='screen', # Specify the output setting to display on the screen
+        parameters=[]
+    )
+
     control_node = Node( # Create a Node object for the lidar_wall_avoider node
         package='sumo', # Specify the package name
         executable='control', # Specify the executable name
@@ -67,6 +76,9 @@ def generate_launch_description(): # Define a function named generate_launch_des
         output='screen', # Specify the output setting to display on the screen
         parameters=[]
     )
+
+    imu_frame = LaunchConfiguration('imu_frame', default='imu_link')
+    imu_frame_arg = DeclareLaunchArgument('imu_frame', default_value=imu_frame)
 
     # Get the share directory for the peripherals package.
     peripherals_share_dir = get_package_share_directory('peripherals')
@@ -107,6 +119,7 @@ def generate_launch_description(): # Define a function named generate_launch_des
         attack_node,
         finder_node,
         safety_node,
+        imu_frame_arg,
         control_node,
 
         # rviz_node # DEBUG

@@ -41,13 +41,16 @@ class AttackEnemy(Node):
 
         # Convert image to HSV and create orange masks.
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        upper_orange1 = np.array([25, 255, 255])
+        lower_orange = np.array([6, 224, 157])
+        upper_orange = np.array([25, 255, 255])
+
+        """upper_orange1 = np.array([25, 255, 255])
         lower_orange1 = np.array([10, 100, 100])
         lower_orange2 = np.array([5, 100, 100])
-        upper_orange2 = np.array([10, 255, 255])
-        mask1 = cv2.inRange(hsv, lower_orange1, upper_orange1)
-        mask2 = cv2.inRange(hsv, lower_orange2, upper_orange2)
-        mask = cv2.bitwise_or(mask1, mask2)
+        upper_orange2 = np.array([10, 255, 255])"""
+
+        # Create the mask for the defined range
+        mask = cv2.inRange(hsv, lower_orange, upper_orange)
 
         # Find contours in the mask.
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -56,29 +59,28 @@ class AttackEnemy(Node):
             cnt = max(contours, key=cv2.contourArea)
             area = cv2.contourArea(cnt)
             # self.get_logger().info(f"Color Area for contour: {area}")
-            if area > 10:
+            if area > 1:
                 ((x, y), radius) = cv2.minEnclosingCircle(cnt)
                 center = (int(x), int(y))
-                cv2.circle(img, center, int(radius), (0, 255, 0), 2)
 
-                # Calculate error relative to the image center.
+                # Calculate error relative to the image center (x-axis).
                 error = center[0] - (img.shape[1] // 2)
+
+                # Angular velocity for turning toward the center.
                 twist.angular.z = -0.005 * error
 
-                # Move forward if the ball is still far away.
-                if radius < 70:  # adjust threshold if needed
-                    twist.linear.x = 0.6
-                    # self.get_logger().info(f"Moving forward: radius={radius:.2f}, error={error}")
-                else:
-                    # Stop if the ball is close enough.
-                    #twist.linear.x = 0.0
-                    #twist.angular.z = 0.0
-        else:
-            twist.linear.x = 0.0
-            twist.angular.z = 0.0
+                # Normalize error to range [0, 1], where 0 = perfectly centered.
+                max_error = img.shape[1] // 2
+                centeredness = 1.0 - min(abs(error) / max_error, 1.0)
+
+                # Set forward speed based on how centered the object is.
+                # More centered => faster forward speed
+                # Tune min/max speeds as needed
+                min_speed = 0.2
+                max_speed = 0.6
+                twist.linear.x = min_speed + (max_speed - min_speed) * centeredness
 
         self.publisher.publish(twist)
-        cv2.waitKey(1)
 
 def main(args=None):
     rclpy.init(args=args)
