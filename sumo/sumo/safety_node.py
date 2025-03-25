@@ -50,7 +50,6 @@ class SafetyNode(Node):
     def active_node_callback(self, msg):
         # Activate safety behavior if the active node is set to a safety state.
         if msg.data in ["neutral_position", "safety_node"]:
-            self.get_logger().warn(f"ACTIVATED!")
             self.active = True
         else:
             self.active = False

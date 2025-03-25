@@ -31,6 +31,7 @@ setup(
             'control = sumo.control_node:main',
             'centroid = sumo.centroid_finder:main',
             'safety = sumo.safety_node:main',
+            'imu = sumo.imu_node:main',
         ],
     },
 )

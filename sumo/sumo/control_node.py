@@ -56,7 +56,7 @@ class ControlNode(Node):
         self.at_state = "UNSET"
 
         # Safety thresholds (tweak these as needed)
-        self.safety_distance_threshold = 0.45  # e.g. if any LIDAR range is below this, robot is too close to the wall
+        self.safety_distance_threshold = 0.15  # e.g. if any LIDAR range is below this, robot is too close to the wall
         self.center_distance_threshold = 0.5  # if the robot's estimated position is more than this from the room center, assume it's near a wall
 
         # Fallback behavior timer
@@ -73,7 +73,7 @@ class ControlNode(Node):
         self.active_node_publisher.publish(state_msg)
 
     def node_state_callback(self, msg):
-        self.get_logger().info(f"NEW STATE: {msg.data}\n")
+        self.get_logger().info(f"State: {self.at_state} | LMIN: {self.latest_lidar_min_distance} | TCV: {self.target_color_visible} | AC: {self.at_center}")
 
     def lidar_callback(self, msg):
         data = msg.data
@@ -102,20 +102,17 @@ class ControlNode(Node):
 
     def camera_callback(self, msg):
         self.target_color_visible = msg.data
-        # self.get_logger().info(f"Updated Target Color status: {msg.data}")
-        if self.latest_lidar_min_distance is None or self.latest_centroid_data is None:
-            self.decide_behavior()
+        self.decide_behavior()
 
     def decide_behavior(self):
         # Ensure both LIDAR and centroid data have been received.
-        self.get_logger().info(f"State: {self.at_state} | LMIN: {self.latest_lidar_min_distance} | TCV: {self.target_color_visible} | AC: {self.at_center}")
         if self.latest_lidar_min_distance is None or self.latest_centroid_data is None:
             self.get_logger().warn("Incomplete sensor data. Falling back to Safe Mode.")
             self.set_state("safety_node", True)
             return
 
         # Check raw LIDAR: if any obstacle is too close.
-        if (self.latest_lidar_min_distance < self.safety_distance_threshold) and (self.at_state != "attack_enemy"):
+        if (self.latest_lidar_min_distance < self.safety_distance_threshold): #and (not self.target_color_visible):
             # self.get_logger().info("LIDAR indicates wall too close. Activating EscapeToCenter.")
             self.set_state("neutral_position", True)
             return
