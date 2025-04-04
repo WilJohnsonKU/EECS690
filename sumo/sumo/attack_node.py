@@ -4,33 +4,50 @@ from sensor_msgs.msg import Image
 from geometry_msgs.msg import Twist
 from std_msgs.msg import String, Bool
 from cv_bridge import CvBridge
-from std_srvs.srv import Trigger
 import cv2
 import numpy as np
 
 class AttackEnemy(Node):
     def __init__(self):
         super().__init__('attack_enemy')
-        # Subscribe to the MentorPi camera topic.
         self.subscription = self.create_subscription(
-            Image, '/ascamera/camera_publisher/rgb0/image', self.image_callback, 10)
+            Image, '/ascamera/camera_publisher/rgb0/image', self.image_callback, 1)
         self.publisher = self.create_publisher(Twist, '/controller/cmd_vel', 1)
         self.stateSubscription = self.create_subscription(
-            String, '/sumo/active_node', self.node_state_callback, 10
-        )
+            String, '/sumo/active_node', self.node_state_callback, 1)
+        self.forceChargeSubscription = self.create_subscription(
+            Bool, '/sumo/force_charge', self.force_charge_callback, 1)
+        self.direction_publisher = self.create_publisher(String, '/sumo/enemy_direction_guess', 1)
+
         self.bridge = CvBridge()
         self.active = False
+        self.force_charge = False
+
+        # Tolerance (in pixels) for determining if the target is significantly off-center.
+        self.direction_tolerance = 200
+
+        # Downscale factor (percentage) to reduce processing load.
+        self.scale_percent = 50  # Process at 50% of original resolution
 
     def node_state_callback(self, msg):
-        if (msg.data == "attack_enemy"):
+        if msg.data == "attack_enemy":
             self.active = True
         else:
             self.active = False
-        return
+
+    def force_charge_callback(self, msg):
+        self.force_charge = msg.data
 
     def image_callback(self, msg):
-        # Only process images if fetch has been triggered.
+        # Process only when active.
         if not self.active:
+            return
+
+        # If force charge is active, bypass vision processing.
+        if self.force_charge:
+            twist = Twist()
+            twist.linear.x = 0.6
+            self.publisher.publish(twist)
             return
 
         try:
@@ -39,46 +56,49 @@ class AttackEnemy(Node):
             self.get_logger().error("Failed to convert image: " + str(e))
             return
 
-        # Convert image to HSV and create orange masks.
-        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        height, width = img.shape[:2]
+        roi = img[int(height / 4):, :]
+
+        # Downscale the image to speed up processing.
+        new_width = int(roi.shape[1] * self.scale_percent / 100)
+        new_height = int(roi.shape[0] * self.scale_percent / 100)
+        resized_img = cv2.resize(roi, (new_width, new_height))
+
+        # Convert the resized image to HSV.
+        hsv = cv2.cvtColor(resized_img, cv2.COLOR_BGR2HSV)
+
+        # Create the orange mask using the unchanged detection thresholds.
         lower_orange = np.array([6, 224, 157])
         upper_orange = np.array([25, 255, 255])
-
-        """upper_orange1 = np.array([25, 255, 255])
-        lower_orange1 = np.array([10, 100, 100])
-        lower_orange2 = np.array([5, 100, 100])
-        upper_orange2 = np.array([10, 255, 255])"""
-
-        # Create the mask for the defined range
         mask = cv2.inRange(hsv, lower_orange, upper_orange)
 
         # Find contours in the mask.
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         twist = Twist()
+
         if contours:
             cnt = max(contours, key=cv2.contourArea)
             area = cv2.contourArea(cnt)
-            # self.get_logger().info(f"Color Area for contour: {area}")
+            # Use the same detection threshold.
             if area > 1:
                 ((x, y), radius) = cv2.minEnclosingCircle(cnt)
                 center = (int(x), int(y))
+                # Calculate error relative to the center of the resized image.
+                error_scaled = center[0] - (new_width // 2)
+                # Convert error back to original image scale.
+                error = error_scaled * (100 / self.scale_percent)
 
-                # Calculate error relative to the image center (x-axis).
-                error = center[0] - (img.shape[1] // 2)
+                # Publish enemy direction guess if error exceeds tolerance.
+                if abs(error) > self.direction_tolerance:
+                    guess_msg = String()
+                    guess_msg.data = "RIGHT" if error > 0 else "LEFT"
+                    self.direction_publisher.publish(guess_msg)
 
-                # Angular velocity for turning toward the center.
+                # Set angular velocity based on the error.
                 twist.angular.z = -0.005 * error
 
-                # Normalize error to range [0, 1], where 0 = perfectly centered.
-                max_error = img.shape[1] // 2
-                centeredness = 1.0 - min(abs(error) / max_error, 1.0)
-
-                # Set forward speed based on how centered the object is.
-                # More centered => faster forward speed
-                # Tune min/max speeds as needed
-                min_speed = 0.2
-                max_speed = 0.6
-                twist.linear.x = min_speed + (max_speed - min_speed) * centeredness
+                # Use the same forward speed as before.
+                twist.linear.x = .6
 
         self.publisher.publish(twist)
 

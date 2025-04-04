@@ -22,34 +22,37 @@ class SafetyNode(Node):
             String,
             '/sumo/active_node',
             self.active_node_callback,
-            10
+            1
         )
         # Publisher to drive the robot
-        self.cmd_vel_pub = self.create_publisher(Twist, '/controller/cmd_vel', 1)
+        self.cmd_vel_pub = self.create_publisher(Twist, '/controller/cmd_vel', 1) # /controller/cmd_vel is faster??
 
         # Publisher for at Center flag
         self.at_center_publisher = self.create_publisher(
             Bool,
             '/sumo/at_center',
-            qos_profile)
-        
+            1
+        )
+
         # Store the latest centroid info and whether safety node is active.
         # Centroid info is expected as [room_center_x, room_center_y] in the robot's coordinate frame.
         self.latest_centroid = None
         self.active = False
 
         # Tolerance for stopping adjustments.
-        self.distance_tolerance = 0.1  # meters
+        self.distance_tolerance = 0.125  # meters
 
         # Run control loop at 10 Hz.
         self.create_timer(0.1, self.timer_callback)
         self.get_logger().info("Safety Node started. Waiting for centroid info and activation.")
 
         self.at_center = False
+        self.IS_SAFETY = False
 
     def active_node_callback(self, msg):
         # Activate safety behavior if the active node is set to a safety state.
         if msg.data in ["neutral_position", "safety_node"]:
+            self.IS_SAFETY = msg.data == "safety_node"
             self.active = True
         else:
             self.active = False
@@ -64,9 +67,7 @@ class SafetyNode(Node):
     def timer_callback(self):
         twist = Twist()
         if self.latest_centroid is not None:
-            # self.get_logger().info(f"ACT: {self.active} | @C: {self.at_center}")
             # Use the room center (centroid) as our target.
-            # We assume the robot's current pose is at (0,0) in its own coordinate frame.
             room_center_x, room_center_y = self.latest_centroid
             # Error vector from robot to target.
             error_x = room_center_x
@@ -74,10 +75,9 @@ class SafetyNode(Node):
             distance_error = math.hypot(error_x, error_y)
 
             # If we're within tolerance, stop moving.
-            if (distance_error < self.distance_tolerance):
+            if distance_error < self.distance_tolerance:
                 twist.linear.x = 0.0
                 twist.linear.y = 0.0
-                twist.angular.z = 0.0
 
                 msg = Bool()
                 msg.data = True
@@ -86,9 +86,9 @@ class SafetyNode(Node):
                 self.at_center = True
 
                 if self.active:
+                    # Override angular.z with the stored value from the cmd_vel subscriber.
                     self.cmd_vel_pub.publish(twist)
                     self.active = False
-                
             else:
                 if self.at_center:
                     self.at_center = False
@@ -101,17 +101,7 @@ class SafetyNode(Node):
                     K_linear = 1.0
                     twist.linear.x = K_linear * error_x
                     twist.linear.y = K_linear * error_y
-                    # If you want to keep a specific orientation, you can add an angular controller.
-                    # Here, we set no angular velocity.
-                    twist.angular.z = 0.0
-
-                #self.get_logger().info(
-                #    f"Moving: error_x: {error_x:.2f}, error_y: {error_y:.2f}, distance error: {distance_error:.2f}"
-                #)
-
-                self.cmd_vel_pub.publish(twist)
-
-        
+                    self.cmd_vel_pub.publish(twist)
 
 def main(args=None):
     rclpy.init(args=args)
