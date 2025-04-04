@@ -5,12 +5,30 @@ from rclpy.task import Future
 from std_msgs.msg import Float32MultiArray, String, Bool
 from std_srvs.srv import Trigger
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy
+from geometry_msgs.msg import Twist
 import numpy as np
+import sys, select, os
+import time
+import tty
+
 
 class ControlNode(Node):
     def __init__(self):
         super().__init__('control_node')
         qos_profile = QoSProfile(depth=1, reliability=QoSReliabilityPolicy.BEST_EFFORT)
+
+        self.vel_publisher = self.create_publisher(Twist, '/controller/cmd_vel', 1)
+        self.inter_sub = self.create_subscription(Bool, 'sumo/interupt', self.interupt_callback, 1)
+
+        self.RUSH = False
+
+        if self.RUSH:
+            rush_twist = Twist()
+            rush_twist.linear.x = 0.2
+            self.vel_publisher.publish(rush_twist)
+
+        #required_nodes = ['finder_node', 'attack_enemy', 'centroid_estimator', 'safety_node', 'lidar_data_publisher']  # <-- Replace with actual node names.
+        #self.wait_for_nodes(required_nodes, timeout_sec=4)
         
         # Subscribe to raw LIDAR data (flat list of [angle, distance, ...])
         self.lidar_subscription = self.create_subscription(
@@ -31,24 +49,23 @@ class ControlNode(Node):
             Bool,
             '/sumo/at_center',
             self.at_center_callback,
-            qos_profile)
-        
-        # Camera subscription (target color detection)
-        self.camera_subscription = self.create_subscription(
+            1)
+
+        self.color_subscription = self.create_subscription(
             Bool,
             '/target_color_status',
             self.camera_callback,
-            10)
+            1)
 
         # DEBUG
 
         self.state_subscription = self.create_subscription(
-            String, '/sumo/active_node', self.node_state_callback, 10)
+            String, '/sumo/active_node', self.node_state_callback, 1)
 
-        self.active_node_publisher = self.create_publisher(String, '/sumo/active_node', 10)
+        self.active_node_publisher = self.create_publisher(String, '/sumo/active_node', 1)
 
         # Latest sensor readings
-        self.latest_lidar_min_distance = None   # Minimum distance from raw lidar_data
+        self.latest_lidar_min_distance = 99   # Minimum distance from raw lidar_data
         self.latest_centroid_data = None          # Centroid info: [room_center_x, room_center_y, robot_pos_x, robot_pos_y]
         self.target_color_visible = None
         self.at_center = False
@@ -56,11 +73,39 @@ class ControlNode(Node):
         self.at_state = "UNSET"
 
         # Safety thresholds (tweak these as needed)
-        self.safety_distance_threshold = 0.15  # e.g. if any LIDAR range is below this, robot is too close to the wall
-        self.center_distance_threshold = 0.5  # if the robot's estimated position is more than this from the room center, assume it's near a wall
+        self.safety_distance_threshold = 0.16  # e.g. if any LIDAR range is below this, robot is too close to the wall
 
-        # Fallback behavior timer
-        self.create_timer(2.0, self.ensure_safe_mode)
+        self.RUNNING = False
+
+        # self.yield_for_launch()
+
+         # Fallback behavior timer
+        self.create_timer(0.1, self.decide_behavior)
+    
+    def interupt_callback(self, msg):
+        self.get_logger().warn(f"MSG: {msg}; DATA: {msg.data}")
+        self.RUNNING = msg.data
+
+    def yield_for_launch(self):
+        while rclpy.ok() and (not self.RUNNING):
+            self.get_logger().info(f"Waiting...")
+            time.sleep(0.1)
+
+
+    def wait_for_nodes(self, node_names, timeout_sec=10):
+        self.get_logger().info(f"Waiting for nodes: {node_names}")
+        start_time = time.time()
+        while rclpy.ok():
+            # Retrieve discovered nodes as tuples of (node_name, node_namespace)
+            discovered = self.get_node_names_and_namespaces()
+            discovered_names = [name for name, _ in discovered]
+            if all(name in discovered_names for name in node_names):
+                self.get_logger().info("All required nodes have loaded.")
+                return
+            if time.time() - start_time > timeout_sec:
+                self.get_logger().warn(f"Timeout waiting for nodes: {node_names}")
+                return
+            time.sleep(0.1)
 
     def set_state(self, new_state, force_ignore_dupe=False):
         if (not force_ignore_dupe) and self.at_state == new_state:
@@ -105,15 +150,11 @@ class ControlNode(Node):
         self.decide_behavior()
 
     def decide_behavior(self):
-        # Ensure both LIDAR and centroid data have been received.
-        if self.latest_lidar_min_distance is None or self.latest_centroid_data is None:
-            self.get_logger().warn("Incomplete sensor data. Falling back to Safe Mode.")
-            self.set_state("safety_node", True)
+        if not self.RUNNING:
             return
 
-        # Check raw LIDAR: if any obstacle is too close.
         if (self.latest_lidar_min_distance < self.safety_distance_threshold): #and (not self.target_color_visible):
-            # self.get_logger().info("LIDAR indicates wall too close. Activating EscapeToCenter.")
+            self.get_logger().info("LIDAR indicates wall too close. Activating EscapeToCenter.")
             self.set_state("neutral_position", True)
             return
             
@@ -121,10 +162,10 @@ class ControlNode(Node):
         if self.target_color_visible is True:
             # self.get_logger().info("Target color detected! Activating ChargeAtColor.")
             self.set_state("attack_enemy")
-        elif self.at_center:
+        elif (self.latest_lidar_min_distance >= self.safety_distance_threshold):
             # self.get_logger().info("No immediate threats. Activating FindTargetColor.")
             self.set_state("find_enemy")
-        else:
+        elif not (self.latest_lidar_min_distance is None or self.latest_centroid_data is None):
             self.set_state("neutral_position", True)
 
     def call_service(self, service_client):
@@ -156,7 +197,11 @@ class ControlNode(Node):
 def main():
     rclpy.init()
     node = ControlNode()
-    rclpy.spin(node)
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        node.vel_publisher.publish(Twist())
+        pass
     node.destroy_node()
     rclpy.shutdown()
 
